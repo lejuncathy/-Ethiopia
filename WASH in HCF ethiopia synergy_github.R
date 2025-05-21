@@ -10,7 +10,7 @@ library(RColorBrewer)
 library(patchwork)
 
 #### File paths ####
-hcf_data_path <- "Copy of 3.Spreadsheet-Scan-CrossCheck (UPDATED DATA).xlsx"  #"H:\\Emory\\WASH in HCF\\Ethiopia\\Synergy\\1.WASH-Env-Graphs-2023.07.xlsx" # Putting the updated database
+hcf_data_path <- "Copy of 3.Spreadsheet-Scan-CrossCheck (UPDATED DATA).xlsx"  # # Putting the updated database
 hcf_data_old_path <- "1.WASH-Env-Graphs-2023.07.xlsx" # Looking at the old version to see how much differs, to make sure that any cleaning I do is still valid.
 data_dictionary_path <- "SynergyProjectSamplesResult_DataDictionary_2018-12-05.csv" # Has codes for many variables
 # amr_sheet_path <- "H:\\Emory\\WASH in HCF\\Ethiopia\\Synergy\\Copy of AST results for each envirom sample.xlsx" # I don't think this is still needed, but is a sheet that had some AMR data. I believe that all needed data are in hcf_data_path
@@ -186,7 +186,7 @@ hcf_data %>% # I think I should spend more time checking the AMR stuff. It does 
 #   unit == "4" ~ "KMC"
 # ), .after = "unit") %>%
 # mutate(site_of_sample_collected_clean = case_when(
-#   site_of_sample_collected == 0 ~ 'oxygen nasal tube',
+
 #   site_of_sample_collected == 1 ~ 'Bed sheet',
 #   site_of_sample_collected == 4 ~ 'oxygen cylinder',
 #   site_of_sample_collected == 5 ~ 'Cabinet',
@@ -203,6 +203,7 @@ hcf_data %>% # I think I should spend more time checking the AMR stuff. It does 
 #   site_of_sample_collected == 17 ~ 'Chair',
 #   site_of_sample_collected == 18 ~ 'sink faucet',
 #   site_of_sample_collected == 19 ~ 'Floor',
+#   site_of_sample_collected == 20 ~ 'oxygen nasal tube',
 #   site_of_sample_collected == 21 ~ 'Blanket',
 #   site_of_sample_collected == 22 ~ 'Ambubag',
 #   site_of_sample_collected == 23 ~ 'Radiant warmer',
@@ -246,28 +247,28 @@ tab3_data_cleaned <- hcf_data_cleaned %>%
 # Frequency of detection of AMR target bacteria from swabs of single-site, high-touch environmental surfaces by infant proximity.
 
 # This answers the "Proximal Swab Site" and "Distal Swab Site" section.
-hcf_data_cleaned %>%
+view_table4.1 <- hcf_data_cleaned %>%
   filter(sample_type_clean == "Swab") %>%
   mutate(site_type_class = case_when(
-    site_type_clean %in% c("IV tube", "Blanket", "Bed sheet", "CPAP machine", "Radiant warmer", "oxygen cylinder", "bed rail") ~ "Proximal Swab Site",
+    site_type_clean %in% c("IV tube", "Blanket", "Bed sheet", "CPAP machine", "Radiant warmer", "oxygen cylinder", "bed rail","oxygen nasal tube","Fetal monitor") ~ "Proximal Swab Site",
     site_type_clean %in% c("Door handle and door", "Cabinet", "Chair", "sink faucet") ~ "Distal Swab Site",
     site_type_clean %in% c("Ambubag") ~ NA_character_ # These were some swabs that were not included. I also saw one phone swab on te table but not here, maybe because of my filtering.
     # I did not see stehtoscope/thermometer, I see IV but not nasal tubing (maybe its included in another), we had chair and im not sure if its also supposedto have a table
-    ## Note: There are a couple that I did not properly classify. Talk with study leads to discuss what they should be considered.
+    ## Note: There are a couple that I did not properly classify. Talk with study leads to discuss what they should be considered.       # This part may be need to be classify????????????????????????????????????????
     ## THere are also many listed as other, with some  explanation of what they are. You may need to do some manual cleaning.
   )) %>%
   # mutate() %>% # I need one more level of consolidation because some of these are combined in the table
   group_by(facility_clean, site_type_class, site_type_clean) %>%
   dplyr::summarise(
     samples = n(),
-    samples_amr_detect = sum(`Any AMR` > 0, na.rm = TRUE) # I don't think this column is actually reflective of AMR.
+    samples_amr_detect = sum(`Any AMR` > 0, na.rm = TRUE) # I don't think this column is actually reflective of AMR.  # It seems it is the column of AMR????????????
   )
 
 ## This answers the "Proximal Swab Bacteria" and "Distal Swab Bacteria"
-hcf_data_cleaned %>%
+view_table4.2<-hcf_data_cleaned %>%
   filter(sample_type_clean == "Swab") %>%
   mutate(site_type_class = case_when(
-    site_type_clean %in% c("IV tube", "Blanket", "Bed sheet", "CPAP machine", "Radiant warmer", "oxygen cylinder", "bed rail") ~ "Proximal Swab Site",
+    site_type_clean %in% c("IV tube", "Blanket", "Bed sheet", "CPAP machine", "Radiant warmer", "oxygen cylinder", "bed rail","oxygen nasal tube","Fetal monitor") ~ "Proximal Swab Site",
     site_type_clean %in% c("Door handle and door", "Cabinet", "Chair", "sink faucet") ~ "Distal Swab Site",
     site_type_clean %in% c("Ambubag") ~ NA_character_ # These were some swabs that were not included. I also saw one phone swab on te table but not here, maybe because of my filtering.
     # I did not see stehtoscope/thermometer, I see IV but not nasal tubing (maybe its included in another), we had chair and im not sure if its also supposedto have a table
@@ -275,23 +276,52 @@ hcf_data_cleaned %>%
   group_by(facility_clean, site_type_class) %>%
   dplyr::summarise( # I don't know if this is meant to be positive for AMR detection for that bacteria type, or just that bacteria (what it currently is)
     samples = n(),
-    ecoli_pos = sum(ecdp_count > 0 | e_coli_mf_count > 0, na.rm = TRUE), # Will need a more sophisticated approach here.
+    ecoli_pos = sum(ecdp_count > 0 | e_coli_mf_count > 0, na.rm = TRUE), # Will need a more sophisticated approach here.????????????????????????????????????
     staph_pos = sum(sacdp_count > 0),
-    kleb_pos = sum(kcdp_count > 0)
+    kleb_pos = sum(kcdp_count > 0),
+    any_pos = sum((ecdp_count > 0) | (e_coli_mf_count > 0) | (sacdp_count > 0) | (kcdp_count > 0), na.rm = TRUE) 
   ) 
+
+#A chi-square test of independence was performed to examine the relationship between facility (FH vs DT) and bacterial positivity from proximal swabs. 
+# Create a 2x2 contingency table
+proximal_bacteria <- matrix(c(18, 39, 39, 33), nrow = 2, byrow = TRUE)
+
+# Add row and column names for clarity
+rownames(proximal_bacteria) <- c("positive", "Negative")
+colnames(proximal_bacteria) <- c("FH", "DT")
+
+# Chi-Square Test of Independence
+chisq.test(proximal_bacteria)
+
+Distal_bacteria <- matrix(c(13, 13, 57, 17), nrow = 2, byrow = TRUE)
+
+# Add row and column names for clarity
+rownames(Distal_bacteria) <- c("positive", "Negative")
+colnames(Distal_bacteria) <- c("FH", "DT")
+
+# Chi-Square Test of Independence
+chisq.test(Distal_bacteria)
+
+
+
+
+
+
+
+
 
 #### Table 5 ####
 #
-hcf_data_cleaned %>%
+Hand_rinse1<-hcf_data_cleaned %>%
   filter(sample_type_clean == "Hand rinse") %>%
-  filter(site_type_clean %in% c("medical doctor", "caregiver", "mothers", "midwife", "Nurse")) %>%
+  filter(site_type_clean %in% c("medical doctor", "care giver", "mothers", "midwife", "Nurse", "other")) %>%
   group_by(facility_clean, site_type_clean) %>%
   dplyr::summarise(
     samples = n(),
     any_pos = sum((ecdp_count > 0) | (e_coli_mf_count > 0) | (sacdp_count > 0) | (kcdp_count > 0), na.rm = TRUE) # Will need to be improved for e coli
   )
 
-hcf_data_cleaned %>%
+Hand_rinse2<-hcf_data_cleaned %>%
   filter(sample_type_clean == "Hand rinse") %>%
   group_by(facility_clean, sex_clean) %>%
   dplyr::summarise(
@@ -303,6 +333,83 @@ hcf_data_cleaned %>%
 
 #### Table 6 ####
 # We did not have the info when I wrote this code. We should now, so this could be written.
+
+
+Ecoli_AMR<-hcf_data_cleaned %>%
+  filter(`Any AMR` == 1, ecpos == 1) %>%
+  group_by(facility_clean) %>%
+  dplyr::summarise(
+    samples = n(),
+    MDR = sum(rowSums(across( c("e_coli_amp", "e_coli_cip", "e_coli_cro", "e_coli_gen", "e_coli_sxt", "e_coli_ttc" , "e_coli_aug", "e_coli_pep", "e_coli_caz", "e_coli_caf", "e_coli_cxf")) == 2, na.rm = TRUE) >= 2),
+    amp = sum(e_coli_amp == 2, na.rm = TRUE), 
+    cip = sum(e_coli_cip == 2, na.rm = TRUE), 
+    cro = sum(e_coli_cro == 2, na.rm = TRUE), 
+    gen = sum(e_coli_gen == 2, na.rm = TRUE), 
+    sxt = sum(e_coli_sxt == 2, na.rm = TRUE), 
+    ttc = sum(e_coli_ttc == 2, na.rm = TRUE), 
+    aug = sum(e_coli_aug == 2, na.rm = TRUE), 
+    pep = sum(e_coli_pep == 2, na.rm = TRUE), 
+    caz = sum(e_coli_caz == 2, na.rm = TRUE), 
+    caf = sum(e_coli_caf == 2, na.rm = TRUE), 
+    cxf = sum(e_coli_cxf == 2, na.rm = TRUE)
+  )
+
+
+kleb_AMR<-hcf_data_cleaned %>%
+  filter(`Any AMR` == 1, klebsiella_positive == 1) %>%
+  group_by(facility_clean) %>%
+  dplyr::summarise(
+    samples = n(),
+    MDR = sum(rowSums(across( c("klebsiella_amp", "klebsiella_cip", "klebsiella_cro", "klebsiella_gen", "klebsiella_sxt", "klebsiella_ttc" , "klebsiella_aug", "klebsiella_pep", "klebsiella_caz", "klebsiella_caf", "klebsiella_cxf")) == 2, na.rm = TRUE) >= 2),
+    amp = sum(klebsiella_amp == 2, na.rm = TRUE), 
+    cip = sum(klebsiella_cip == 2, na.rm = TRUE), 
+    cro = sum(klebsiella_cro == 2, na.rm = TRUE), 
+    gen = sum(klebsiella_gen == 2, na.rm = TRUE), 
+    sxt = sum(klebsiella_sxt == 2, na.rm = TRUE), 
+    ttc = sum(klebsiella_ttc == 2, na.rm = TRUE), 
+    aug = sum(klebsiella_aug == 2, na.rm = TRUE), 
+    pep = sum(klebsiella_pep == 2, na.rm = TRUE), 
+    caz = sum(klebsiella_caz == 2, na.rm = TRUE), 
+    caf = sum(klebsiella_caf == 2, na.rm = TRUE), 
+    cxf = sum(klebsiella_cxf == 2, na.rm = TRUE)
+  )
+
+saur_AMR<-hcf_data_cleaned %>%
+  filter(`Any AMR` == 1, s_aureus_positive == 1) %>%
+  group_by(facility_clean) %>%
+  dplyr::summarise(
+    samples = n(),
+    MDR = sum(rowSums(across( c("s_aureus_pen", "s_aureus_cip", "s_aureus_oxa", "s_aureus_da", "s_aureus_cro", "s_aureus_sxt" ,"s_aureus_ttc", "s_aureus_ery", "s_aureus_van", "s_aureus_caf", "s_aureus_cxf")) == 2, na.rm = TRUE) >= 2),
+    pen = sum(s_aureus_pen == 2, na.rm = TRUE), 
+    cip = sum(s_aureus_cip == 2, na.rm = TRUE), 
+    oxa = sum(s_aureus_oxa == 2, na.rm = TRUE), 
+    da = sum(s_aureus_da == 2, na.rm = TRUE), 
+    cro = sum(s_aureus_cro == 2, na.rm = TRUE), 
+    sxt = sum(s_aureus_sxt == 2, na.rm = TRUE), 
+    ttc = sum(s_aureus_ttc == 2, na.rm = TRUE),
+    ery = sum(s_aureus_ery == 2, na.rm = TRUE), 
+    van = sum(s_aureus_van == 2, na.rm = TRUE), 
+    caf = sum(s_aureus_caf == 2, na.rm = TRUE), 
+    cxf = sum(s_aureus_cxf == 2, na.rm = TRUE)
+  )
+
+fac<-hcf_data_cleaned %>%
+  group_by(facility_clean) %>%
+  dplyr::summarise(
+    samples = n()
+  )
+
+AMR<-hcf_data_cleaned %>%
+  filter(`Any AMR` == 1) %>%
+  group_by(facility_clean) %>%
+  dplyr::summarise(
+    samples = n()
+  )
+
+
+
+
+
 
 #### Figure 1 ####
 ### Will first make the data needed for each, then the graph
@@ -327,12 +434,23 @@ plot_1a <- ggplot(hcf_data_1a_data,
     "Water from medical device" = "Device"
   )) + 
   scale_fill_manual(values = c(
-    "Deberetabor" = "#FC8D62",
+    "Deberetabor" = "#00008B",
     "Felegehiwot" = "#8DA0CB"
   )) +
-  guides(fill = guide_legend("Healthcare Facility")) + 
+  # Add axis labels here
+  labs(
+    title = "Sample type, percent of samples positive for any target bacteria",
+    x = "Environmental Sample Type",
+    y = "Proportion of Positive Samples",
+    fill = "Healthcare Facility"
+  ) +
+  # Style the plot
   theme_bw() +
-  theme(axis.title = element_blank(), legend.position = "bottom", legend.title = element_blank())
+  theme(
+    legend.position = "bottom"
+  )
+
+
 
 ### Figure 1b: Unit by facility, percent of samples positive for any target bacteria
 hcf_data_1b_data  <- hcf_data_cleaned %>%
@@ -348,12 +466,31 @@ plot_1b <- ggplot(hcf_data_1b_data,
   geom_col(position = "dodge") +
   scale_y_continuous(labels = scales::percent, expand = c(0, NA), limits = c(0, 0.9)) +
   scale_fill_manual(values = c(
-    "Deberetabor" = "#FC8D62",
+    "Deberetabor" = "#00008B",
     "Felegehiwot" = "#8DA0CB"
   )) +
-  guides(fill = guide_legend("Healthcare Facility")) + 
+  # Add axis titles
+  labs(
+    title = "Unit by facility, percent of samples positive for any target bacteria",
+    x = "Unit",
+    y = "Proportion of Positive Samples",
+    fill = "Healthcare Facility"
+  ) +
+  
+  # Improve appearance
   theme_bw() +
-  theme(axis.title = element_blank(), legend.position = "bottom", legend.title = element_blank())
+  theme(
+    legend.position = "bottom"
+  )
+
+
+
+
+
+
+
+
+
 
 
 ### Figure 1c: surface swabs positive by unit by facility
@@ -372,12 +509,29 @@ plot_1c <- ggplot(hcf_data_1c_data,
   geom_col(position = "dodge") +
   scale_y_continuous(labels = scales::percent, expand = c(0, NA), limits = c(0, 0.9)) +
   scale_fill_manual(values = c(
-    "Deberetabor" = "#FC8D62",
+    "Deberetabor" = "#00008B",
     "Felegehiwot" = "#8DA0CB"
   )) +
-  guides(fill = guide_legend("Healthcare Facility")) + 
+  # Add axis and legend titles
+  labs(
+    title = "surface swabs positive by unit by facility",
+    x = "Hospital Unit",
+    y = "Proportion of Surface Swabs Positive",
+    fill = "Healthcare Facility"
+  ) +
+  
+  # Theme settings
   theme_bw() +
-  theme(axis.title = element_blank(), legend.position = "bottom", legend.title = element_blank())
+  theme(
+    legend.position = "bottom"
+  )
+
+
+
+
+
+
+
 
 ### Figure 1d: Hand rinse samples positive for anything by hcf and unit
 hcf_data_1d_data  <- hcf_data_cleaned %>%
@@ -394,12 +548,24 @@ plot_1d <- ggplot(hcf_data_1d_data,
   geom_col(position = "dodge") +
   scale_y_continuous(labels = scales::percent, expand = c(0, NA), limits = c(0, 0.9)) +
   scale_fill_manual(values = c(
-    "Deberetabor" = "#FC8D62",
+    "Deberetabor" = "#00008B",
     "Felegehiwot" = "#8DA0CB"
   )) +
-  guides(fill = guide_legend("Healthcare Facility")) + 
+  # Add axis titles and legend title
+  labs(
+    title = "Hand rinse samples positive for anything by hcf and unit",
+    x = "Hospital Unit",
+    y = "Proportion of Hand Rinse Samples Positive",
+    fill = "Healthcare Facility"
+  ) +
+  
   theme_bw() +
-  theme(axis.title = element_blank(), legend.position = "bottom", legend.title = element_blank())
+  theme(
+    legend.position = "bottom"
+  )
+
+
+
 
 plot_1a + 
   plot_1b + 
@@ -408,6 +574,20 @@ plot_1a +
   guide_area() +
   plot_layout(ncol = 1, guides = "collect") + 
   plot_annotation(tag_levels = "a", tag_prefix = "1", tag_suffix = ")")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #### Some summary statistics for checking results, not necessarily to include in the paper ####
