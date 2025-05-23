@@ -254,14 +254,14 @@ view_table4.1 <- hcf_data_cleaned %>%
     site_type_clean %in% c("Door handle and door", "Cabinet", "Chair", "sink faucet") ~ "Distal Swab Site",
     site_type_clean %in% c("Ambubag") ~ NA_character_ # These were some swabs that were not included. I also saw one phone swab on te table but not here, maybe because of my filtering.
     # I did not see stehtoscope/thermometer, I see IV but not nasal tubing (maybe its included in another), we had chair and im not sure if its also supposedto have a table
-    ## Note: There are a couple that I did not properly classify. Talk with study leads to discuss what they should be considered.       # This part may be need to be classify????????????????????????????????????????
+    ## Note: There are a couple that I did not properly classify. Talk with study leads to discuss what they should be considered.       
     ## THere are also many listed as other, with some  explanation of what they are. You may need to do some manual cleaning.
   )) %>%
   # mutate() %>% # I need one more level of consolidation because some of these are combined in the table
   group_by(facility_clean, site_type_class, site_type_clean) %>%
   dplyr::summarise(
     samples = n(),
-    samples_amr_detect = sum(`Any AMR` > 0, na.rm = TRUE) # I don't think this column is actually reflective of AMR.  # It seems it is the column of AMR????????????
+    samples_amr_detect = sum(`Any AMR` > 0, na.rm = TRUE) # I don't think this column is actually reflective of AMR. 
   )
 
 ## This answers the "Proximal Swab Bacteria" and "Distal Swab Bacteria"
@@ -276,7 +276,7 @@ view_table4.2<-hcf_data_cleaned %>%
   group_by(facility_clean, site_type_class) %>%
   dplyr::summarise( # I don't know if this is meant to be positive for AMR detection for that bacteria type, or just that bacteria (what it currently is)
     samples = n(),
-    ecoli_pos = sum(ecdp_count > 0 | e_coli_mf_count > 0, na.rm = TRUE), # Will need a more sophisticated approach here.????????????????????????????????????
+    ecoli_pos = sum(ecdp_count > 0 | e_coli_mf_count > 0, na.rm = TRUE), # Will need a more sophisticated approach here.
     staph_pos = sum(sacdp_count > 0),
     kleb_pos = sum(kcdp_count > 0),
     any_pos = sum((ecdp_count > 0) | (e_coli_mf_count > 0) | (sacdp_count > 0) | (kcdp_count > 0), na.rm = TRUE) 
@@ -439,10 +439,10 @@ plot_1a <- ggplot(hcf_data_1a_data,
   )) +
   # Add axis labels here
   labs(
-    title = "Sample type, percent of samples positive for any target bacteria",
+    title = "Frequency of all samples positive for any target bacteria by HCF and sample type",
     x = "Environmental Sample Type",
     y = "Proportion of Positive Samples",
-    fill = "Healthcare Facility"
+    fill = "Facility"
   ) +
   # Style the plot
   theme_bw() +
@@ -471,10 +471,10 @@ plot_1b <- ggplot(hcf_data_1b_data,
   )) +
   # Add axis titles
   labs(
-    title = "Unit by facility, percent of samples positive for any target bacteria",
-    x = "Unit",
+    title = "Frequency of all samples positive for any target bacteria by HCF and unit",
+    x = "Hospital Unit",
     y = "Proportion of Positive Samples",
-    fill = "Healthcare Facility"
+    fill = "Facility"
   ) +
   
   # Improve appearance
@@ -514,10 +514,10 @@ plot_1c <- ggplot(hcf_data_1c_data,
   )) +
   # Add axis and legend titles
   labs(
-    title = "surface swabs positive by unit by facility",
+    title = "Frequency of surface swab samples positive for any target bacteria by HCF and unit",
     x = "Hospital Unit",
     y = "Proportion of Surface Swabs Positive",
-    fill = "Healthcare Facility"
+    fill = "Facility"
   ) +
   
   # Theme settings
@@ -553,10 +553,10 @@ plot_1d <- ggplot(hcf_data_1d_data,
   )) +
   # Add axis titles and legend title
   labs(
-    title = "Hand rinse samples positive for anything by hcf and unit",
+    title = "Frequency of hand rinse samples positive for any target bacteria by HCF and unit",
     x = "Hospital Unit",
     y = "Proportion of Hand Rinse Samples Positive",
-    fill = "Healthcare Facility"
+    fill = "Facility"
   ) +
   
   theme_bw() +
@@ -567,13 +567,13 @@ plot_1d <- ggplot(hcf_data_1d_data,
 
 
 
-plot_1a + 
-  plot_1b + 
-  plot_1c + 
-  plot_1d + 
-  guide_area() +
-  plot_layout(ncol = 1, guides = "collect") + 
-  plot_annotation(tag_levels = "a", tag_prefix = "1", tag_suffix = ")")
+#plot_1a + 
+#  plot_1b + 
+#  plot_1c + 
+#  plot_1d + 
+#  guide_area() +
+#  plot_layout(ncol = 1, guides = "collect") + 
+#  plot_annotation(tag_levels = "a", tag_prefix = "1", tag_suffix = ")")
 
 
 
