@@ -439,10 +439,9 @@ plot_1a <- ggplot(hcf_data_1a_data,
   )) +
   # Add axis labels here
   labs(
-    title = "Frequency of all samples positive for any target bacteria by HCF and sample type",
     x = "Environmental Sample Type",
     y = "Proportion of Positive Samples",
-    fill = "Facility"
+    fill = "Hospital Facility"
   ) +
   # Style the plot
   theme_bw() +
@@ -453,31 +452,36 @@ plot_1a <- ggplot(hcf_data_1a_data,
 
 
 ### Figure 1b: Unit by facility, percent of samples positive for any target bacteria
-hcf_data_1b_data  <- hcf_data_cleaned %>%
+hcf_data_1b_data <- hcf_data_cleaned %>%
   group_by(facility_clean, unit) %>%
   dplyr::summarise(
     samples = n(),
-    samples_pos = sum((ecdp_count > 0) | (e_coli_mf_count > 0) | (sacdp_count > 0) | (kcdp_count > 0), na.rm = TRUE)
+    samples_pos = sum((ecdp_count > 0) | (e_coli_mf_count > 0) | 
+                        (sacdp_count > 0) | (kcdp_count > 0), na.rm = TRUE)
   ) %>%
-  mutate(ratio_pos = samples_pos/samples)
+  mutate(ratio_pos = samples_pos / samples,
+         unit_full = recode(unit,
+                            "DEL" = "Delivery unit",
+                            "KMC" = "Kangaroo mother care unit",
+                            "MOR" = "Main Operating Room",
+                            "NICU" = "Neonatal ICU",
+                            "PNC" = "Postnatal care unit"))
 
+# Plot using the full unit names
 plot_1b <- ggplot(hcf_data_1b_data,
-                  aes(x = unit, y = ratio_pos, fill = facility_clean)) +
+                  aes(x = unit_full, y = ratio_pos, fill = facility_clean)) +
   geom_col(position = "dodge") +
   scale_y_continuous(labels = scales::percent, expand = c(0, NA), limits = c(0, 0.9)) +
   scale_fill_manual(values = c(
     "Deberetabor" = "#00008B",
     "Felegehiwot" = "#8DA0CB"
   )) +
-  # Add axis titles
   labs(
-    title = "Frequency of all samples positive for any target bacteria by HCF and unit",
+    
     x = "Hospital Unit",
     y = "Proportion of Positive Samples",
-    fill = "Facility"
+    fill = "Hospital Facility"
   ) +
-  
-  # Improve appearance
   theme_bw() +
   theme(
     legend.position = "bottom"
@@ -491,36 +495,41 @@ plot_1b <- ggplot(hcf_data_1b_data,
 
 
 
-
-
 ### Figure 1c: surface swabs positive by unit by facility
-hcf_data_1c_data  <- hcf_data_cleaned %>%
+# Recode unit names to full names for surface swab data
+hcf_data_1c_data <- hcf_data_cleaned %>%
   filter(sample_type_clean == "Swab") %>%
   group_by(facility_clean, unit) %>%
   dplyr::summarise(
     samples = n(),
-    samples_pos = sum((ecdp_count > 0) | (e_coli_mf_count > 0) | (sacdp_count > 0) | (kcdp_count > 0), na.rm = TRUE)
+    samples_pos = sum((ecdp_count > 0) | (e_coli_mf_count > 0) | 
+                        (sacdp_count > 0) | (kcdp_count > 0), na.rm = TRUE)
   ) %>%
-  mutate(ratio_pos = samples_pos/samples)
+  mutate(
+    ratio_pos = samples_pos / samples,
+    unit_full = recode(unit,
+                       "DEL" = "Delivery unit",
+                       "KMC" = "Kangaroo mother care unit",
+                       "MOR" = "Main Operating Room",
+                       "NICU" = "Neonatal ICU",
+                       "PNC" = "Postnatal care unit"
+    )
+  )
 
-
+# Plot using full unit names
 plot_1c <- ggplot(hcf_data_1c_data,
-                  aes(x = unit, y = ratio_pos, fill = facility_clean)) +
+                  aes(x = unit_full, y = ratio_pos, fill = facility_clean)) +
   geom_col(position = "dodge") +
   scale_y_continuous(labels = scales::percent, expand = c(0, NA), limits = c(0, 0.9)) +
   scale_fill_manual(values = c(
     "Deberetabor" = "#00008B",
     "Felegehiwot" = "#8DA0CB"
   )) +
-  # Add axis and legend titles
   labs(
-    title = "Frequency of surface swab samples positive for any target bacteria by HCF and unit",
     x = "Hospital Unit",
     y = "Proportion of Surface Swabs Positive",
-    fill = "Facility"
+    fill = "Hospital Facility"
   ) +
-  
-  # Theme settings
   theme_bw() +
   theme(
     legend.position = "bottom"
@@ -534,31 +543,41 @@ plot_1c <- ggplot(hcf_data_1c_data,
 
 
 ### Figure 1d: Hand rinse samples positive for anything by hcf and unit
-hcf_data_1d_data  <- hcf_data_cleaned %>%
+# Recode unit names to full names for hand rinse data
+hcf_data_1d_data <- hcf_data_cleaned %>%
   filter(sample_type_clean == "Hand rinse") %>%
   group_by(facility_clean, unit) %>%
   dplyr::summarise(
     samples = n(),
-    samples_pos = sum((ecdp_count > 0) | (e_coli_mf_count > 0) | (sacdp_count > 0) | (kcdp_count > 0), na.rm = TRUE)
+    samples_pos = sum((ecdp_count > 0) | (e_coli_mf_count > 0) | 
+                        (sacdp_count > 0) | (kcdp_count > 0), na.rm = TRUE)
   ) %>%
-  mutate(ratio_pos = samples_pos/samples)
+  mutate(
+    ratio_pos = samples_pos / samples,
+    unit_full = recode(unit,
+                       "DEL" = "Delivery unit",
+                       "KMC" = "Kangaroo mother care unit",
+                       "MOR" = "Main Operating Room",
+                       "NICU" = "Neonatal ICU",
+                       "PNC" = "Postnatal care unit"
+    )
+  )
 
+# Plot using full unit names
 plot_1d <- ggplot(hcf_data_1d_data,
-                  aes(x = unit, y = ratio_pos, fill = facility_clean)) +
+                  aes(x = unit_full, y = ratio_pos, fill = facility_clean)) +
   geom_col(position = "dodge") +
   scale_y_continuous(labels = scales::percent, expand = c(0, NA), limits = c(0, 0.9)) +
   scale_fill_manual(values = c(
     "Deberetabor" = "#00008B",
     "Felegehiwot" = "#8DA0CB"
   )) +
-  # Add axis titles and legend title
   labs(
-    title = "Frequency of hand rinse samples positive for any target bacteria by HCF and unit",
+    
     x = "Hospital Unit",
     y = "Proportion of Hand Rinse Samples Positive",
-    fill = "Facility"
+    fill = "Hospital Facility"
   ) +
-  
   theme_bw() +
   theme(
     legend.position = "bottom"
